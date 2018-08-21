@@ -111,6 +111,9 @@ class BotClient(discord.AutoShardedClient):
 
         command = None
 
+        if message.content == self.user.mention:
+            await self.commands['info'](message, '')
+
         if message.content[0:len(prefix)] == prefix:
             command = message.content.split(' ')[1]
             stripped = (message.content + ' ').split(' ', 2)[-1].strip()
@@ -127,7 +130,7 @@ class BotClient(discord.AutoShardedClient):
         return False
 
 
-    async def ping(self, message, stripped, server):
+    async def ping(self, message, stripped):
         t = message.created_at.timestamp()
         e = await message.channel.send('pong')
         delta = e.created_at.timestamp() - t
@@ -135,18 +138,34 @@ class BotClient(discord.AutoShardedClient):
         await e.edit(content='Pong! {}ms round trip'.format(round(delta * 1000)))
 
 
-    async def help(self, message, stripped, server):
-        embed = discord.Embed(title='HELP', color=self.color, description=
+    async def help(self, message, stripped):
+        embed = discord.Embed(title='HELP', description=
         '''
-        '''.format(self.user.name)
+**Help**
+
+`timezone new <timezone name>` - Create a new clock channel in your guild.
+
+`timezone personal <timezone name>` - Set your personal timezone, so others can check on you.
+
+`timezone check <user mention>` - Check the time in a user's timezone, if they set it with `timezone personal`.
+        '''
         )
         await message.channel.send(embed=embed)
 
 
-    async def info(self, message, stripped, server):
-        em = discord.Embed(title='INFO', color=self.color, description=
+    async def info(self, message, stripped):
+        em = discord.Embed(title='INFO', description=
         '''
-        '''.format(user=self.user.name, p=server.prefix)
+**Info**
+
+Bot o'clock is a part of the Fusion Network:
+https://discordbots.org/servers/366542432671760396
+
+It well accompanies Reminder Bot by @JellyWX:
+https://discordbots.org/bot/349920059549941761
+
+The bot can be summoned with a mention or using `timezone` as a prefix.
+        '''
         )
 
         await message.channel.send(embed=em)
@@ -198,17 +217,19 @@ class BotClient(discord.AutoShardedClient):
 
 
     async def check(self, message, stripped):
-        user = session.query(User).filter(User.id == message.mentions[0].id).first()
-        if user is None:
-            await message.channel.send('User hasn\'t specified a timezone')
+        if len(message.mentions) != 1:
+            await message.channel.send('You must mention the user you wish to check')
+
         else:
-            t = datetime.now(pytz.timezone(user.timezone))
+            user = session.query(User).filter(User.id == message.mentions[0].id).first()
+            if user is None:
+                await message.channel.send('User hasn\'t specified a timezone')
+            else:
+                t = datetime.now(pytz.timezone(user.timezone))
 
-            await message.channel.send(
-                '{}\'s current time is {}'.format(message.mentions[0].name, t.strftime('%H:%M'))
-            )
-
-        user.timezone = stripped
+                await message.channel.send(
+                    '{}\'s current time is {}'.format(message.mentions[0].name, t.strftime('%H:%M'))
+                )
 
 
     async def update(self):
