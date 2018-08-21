@@ -18,6 +18,12 @@ class Clock(Base):
     def __repr__(self):
         return '<Server {}>'.format(self.id)
 
+class User(Base):
+    __tablename__ = 'users'
+
+    map_id = Column(Integer, primary_key=True)
+    id = Column(BigInteger)
+    timezone = Column( Text )
 
 engine = create_engine('sqlite:///app.db')
 Base.metadata.create_all(bind=engine)

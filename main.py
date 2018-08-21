@@ -1,4 +1,4 @@
-from models import session, Clock
+from models import session, Clock, User
 
 import discord ## pip3 install git+...
 import sys
@@ -22,7 +22,9 @@ class BotClient(discord.AutoShardedClient):
             'ping' : self.ping,
             'help' : self.help,
             'info': self.info,
-            'new' : self.new
+            'new' : self.new,
+            'personal' : self.personal,
+            'check' : self.check,
         }
 
         self.config = SafeConfigParser()
@@ -110,11 +112,8 @@ class BotClient(discord.AutoShardedClient):
         command = None
 
         if message.content[0:len(prefix)] == prefix:
-            print('pref detected')
             command = message.content.split(' ')[1]
             stripped = (message.content + ' ').split(' ', 2)[-1].strip()
-
-            print(command)
 
         elif self.user.id in map(lambda x: x.id, message.mentions) and len(message.content.split(' ')) > 1:
             command = message.content.split(' ')[1]
@@ -172,6 +171,44 @@ class BotClient(discord.AutoShardedClient):
 
             chan = Clock(channel_id=c.id, guild_id=message.guild.id, timezone=tz)
             session.add(chan)
+
+
+    async def personal(self, message, stripped):
+        if stripped.lower() not in [x.lower() for x in pytz.all_timezones]:
+            await message.channel.send('Timezone not recognised. Please view a list here: [insert link]')
+
+        else:
+            user = session.query(User).filter(User.id == message.author.id).first()
+            if user is None:
+                user = User(id=message.author.id, timezone='UTC')
+                session.add(user)
+                session.commit()
+
+            user = session.query(User).filter(User.id == message.author.id).first()
+
+            tz = stripped
+
+            t = datetime.now(pytz.timezone(tz))
+
+            await message.channel.send(
+                'Your current time should be {}'.format(t.strftime('%H:%M'))
+            )
+
+            user.timezone = stripped
+
+
+    async def check(self, message, stripped):
+        user = session.query(User).filter(User.id == message.mentions[0].id).first()
+        if user is None:
+            await message.channel.send('User hasn\'t specified a timezone')
+        else:
+            t = datetime.now(pytz.timezone(user.timezone))
+
+            await message.channel.send(
+                '{}\'s current time is {}'.format(message.mentions[0].name, t.strftime('%H:%M'))
+            )
+
+        user.timezone = stripped
 
 
     async def update(self):
