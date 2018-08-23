@@ -165,6 +165,8 @@ It well accompanies Reminder Bot by @JellyWX:
 https://discordbots.org/bot/349920059549941761
 
 The bot can be summoned with a mention or using `timezone` as a prefix.
+
+Do `timezone help` for more.
         '''
         )
 
@@ -172,8 +174,8 @@ The bot can be summoned with a mention or using `timezone` as a prefix.
 
 
     async def new(self, message, stripped):
-        if stripped.lower() not in [x.lower() for x in pytz.all_timezones]:
-            await message.channel.send('Timezone not recognised. Please view a list here: [insert link]')
+        if stripped.lower() not in pytz.all_timezones:
+            await message.channel.send('Timezone not recognised. Please view a list here: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568')
 
         else:
             tz = stripped
@@ -193,8 +195,8 @@ The bot can be summoned with a mention or using `timezone` as a prefix.
 
 
     async def personal(self, message, stripped):
-        if stripped.lower() not in [x.lower() for x in pytz.all_timezones]:
-            await message.channel.send('Timezone not recognised. Please view a list here: [insert link]')
+        if stripped.lower() not in pytz.all_timezones:
+            await message.channel.send('Timezone not recognised. Please view a list here: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568')
 
         else:
             user = session.query(User).filter(User.id == message.author.id).first()
@@ -249,10 +251,9 @@ The bot can be summoned with a mention or using `timezone` as a prefix.
 
                     else:
                         t = datetime.now(pytz.timezone(channel.timezone))
-                        await c.edit(name='🕒 {} ({})'.format(t.strftime('%H:%M:%S'), channel.timezone))
+                        await c.edit(name='🕒 {} ({})'.format(t.strftime('%H:%M'), channel.timezone))
 
-
-            await asyncio.sleep(0.2)
+            await asyncio.sleep(20)
 
 
 client = BotClient()
