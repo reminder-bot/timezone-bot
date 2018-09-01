@@ -13,6 +13,7 @@ class Clock(Base):
     id = Column(Integer, primary_key=True)
     channel_id = Column(BigInteger, unique=True)
     timezone = Column( Text )
+    channel_name = Column( Text )
     guild_id = Column( BigInteger )
 
     def __repr__(self):

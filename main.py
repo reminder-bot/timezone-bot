@@ -12,6 +12,7 @@ from datetime import datetime
 from configparser import SafeConfigParser
 from datetime import datetime
 import traceback
+from collections import defaultdict
 
 
 class BotClient(discord.AutoShardedClient):
@@ -175,23 +176,38 @@ Do `timezone help` for more.
 
     async def new(self, message, stripped):
 
-        if stripped.lower() not in map(lambda x: x.lower(), pytz.all_timezones):
+        if stripped.split(' ')[0].lower() not in map(lambda x: x.lower(), pytz.all_timezones):
             await message.channel.send('Timezone not recognised. Please view a list here: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568')
 
         else:
-            tz = stripped
+            args = stripped.split(' ', 1)
+
+            tz = args.pop(0)
+
+            if len(args) != 0:
+                name = args[0].replace('{', '{0[').replace('}', ']}')
+
+            else:
+                name = '🕒 {0[hours]}:{0[minutes]} ({0[timezone]})'
 
             t = datetime.now(pytz.timezone(tz))
 
+            d = defaultdict(str)
+
+            d['hours'] = t.hour
+            d['minutes'] = t.minute
+            d['days'] = t.day
+            d['timezone'] = tz
+
             c = await message.guild.create_voice_channel(
-                '🕒 {} ({})'.format(t.strftime('%H:%M'), tz),
+                name.format(d),
 
                 overwrites= {
                     message.guild.default_role: discord.PermissionOverwrite(connect=False)
                 }
             )
 
-            chan = Clock(channel_id=c.id, guild_id=message.guild.id, timezone=tz)
+            chan = Clock(channel_id=c.id, guild_id=message.guild.id, timezone=tz, channel_name=name)
             session.add(chan)
 
 
@@ -245,7 +261,7 @@ Do `timezone help` for more.
 
                 if guild is None:
                     session.query(Clock).filter_by(id=channel.id).delete(synchronize_session='fetch')
-                    
+
                 else:
                     c = guild.get_channel(channel.channel_id)
                     if c is None:
@@ -253,7 +269,15 @@ Do `timezone help` for more.
 
                     else:
                         t = datetime.now(pytz.timezone(channel.timezone))
-                        await c.edit(name='🕒 {} ({})'.format(t.strftime('%H:%M'), channel.timezone))
+
+                        d = defaultdict(str)
+
+                        d['hours'] = t.hour
+                        d['minutes'] = t.minute
+                        d['days'] = t.day
+                        d['timezone'] = channel.timezone
+
+                        await c.edit(name=channel.channel_name.format(d))
 
             await asyncio.sleep(20)
 
