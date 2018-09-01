@@ -190,7 +190,10 @@ Do `timezone help` for more.
 
     async def new(self, message, stripped):
 
-        if stripped.split(' ')[0].lower() not in map(lambda x: x.lower(), pytz.all_timezones):
+        if not message.author.guild_permissions.manage_guild:
+            await message.channel.send('You must be a Guild Manager to perform this command')
+
+        elif stripped.split(' ')[0].lower() not in map(lambda x: x.lower(), pytz.all_timezones):
             await message.channel.send('Timezone not recognised. Please view a list here: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568')
 
         else:
