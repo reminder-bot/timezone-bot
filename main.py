@@ -145,7 +145,7 @@ class BotClient(discord.AutoShardedClient):
 
 `timezone new <timezone name>` - Create a new clock channel in your guild.
 
-`timezone personal <timezone name>` - Set your personal timezone, so others can check on you.
+`timezone personal <timezone name>` - Set your personal timezone, so others can check in on you.
 
 `timezone check <user mention>` - Check the time in a user's timezone, if they set it with `timezone personal`.
         '''
@@ -174,7 +174,8 @@ Do `timezone help` for more.
 
 
     async def new(self, message, stripped):
-        if stripped.lower() not in pytz.all_timezones:
+
+        if stripped.lower() not in map(lambda x: x.lower(), pytz.all_timezones):
             await message.channel.send('Timezone not recognised. Please view a list here: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568')
 
         else:
@@ -195,7 +196,8 @@ Do `timezone help` for more.
 
 
     async def personal(self, message, stripped):
-        if stripped.lower() not in pytz.all_timezones:
+
+        if stripped.lower() not in map(lambda x: x.lower(), pytz.all_timezones):
             await message.channel.send('Timezone not recognised. Please view a list here: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568')
 
         else:
