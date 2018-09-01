@@ -244,8 +244,8 @@ Do `timezone help` for more.
                 guild = self.get_guild(channel.guild_id)
 
                 if guild is None:
-                    channel.delete(synchronize_session='fetch')
-
+                    session.query(Clock).filter_by(id=channel.id).delete(synchronize_session='fetch')
+                    
                 else:
                     c = guild.get_channel(channel.channel_id)
                     if c is None:
