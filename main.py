@@ -140,16 +140,30 @@ class BotClient(discord.AutoShardedClient):
 
 
     async def help(self, message, stripped):
+        now = datetime.utcnow()
+
         embed = discord.Embed(title='HELP', description=
         '''
 **Help**
 
-`timezone new <timezone name>` - Create a new clock channel in your guild.
+`timezone new <timezone name> [channel name]` - Create a new clock channel in your guild. You can customize the channel name as below:
+
+```
+Available inputs: {{hours}}, {{days}}, {{minutes}}, {{timezone}}
+
+Example:
+    {{hours}} o'clock on the {{days}}th
+Displays:
+    {hours} o'clock on the {days}th
+
+Default Value:
+    🕒 {{hours}}:{{minutes}} ({{timezone}})
+```
 
 `timezone personal <timezone name>` - Set your personal timezone, so others can check in on you.
 
 `timezone check <user mention>` - Check the time in a user's timezone, if they set it with `timezone personal`.
-        '''
+        '''.format(days=now.day, hours=now.hour)
         )
         await message.channel.send(embed=embed)
 
