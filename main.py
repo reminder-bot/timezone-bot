@@ -211,8 +211,8 @@ Do `timezone help` for more.
 
             d = defaultdict(str)
 
-            d['hours'] = t.hour
-            d['minutes'] = t.minute
+            d['hours'] = t.strftime('%H')
+            d['minutes'] = t.strftime('%M')
             d['days'] = t.day
             d['timezone'] = tz
 
@@ -289,8 +289,8 @@ Do `timezone help` for more.
 
                         d = defaultdict(str)
 
-                        d['hours'] = t.hour
-                        d['minutes'] = t.minute
+                        d['hours'] = t.strftime('%H')
+                        d['minutes'] = t.strftime('%M')
                         d['days'] = t.day
                         d['timezone'] = channel.timezone
 
