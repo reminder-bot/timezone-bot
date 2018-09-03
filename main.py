@@ -149,7 +149,7 @@ class BotClient(discord.AutoShardedClient):
 `timezone new <timezone name> [channel name]` - Create a new clock channel in your guild. You can customize the channel name as below:
 
 ```
-Available inputs: {{hours}}, {{days}}, {{minutes}}, {{timezone}}
+Available inputs: {{hours}}, {{days}}, {{minutes}}, {{timezone}}, {{day_name}}
 
 Example:
     {{hours}} o'clock on the {{days}}th
@@ -214,6 +214,7 @@ Do `timezone help` for more.
             d['hours'] = t.strftime('%H')
             d['minutes'] = t.strftime('%M')
             d['days'] = t.day
+            d['day_name'] = t.strftime('%A')
             d['timezone'] = tz
 
             c = await message.guild.create_voice_channel(
@@ -254,19 +255,37 @@ Do `timezone help` for more.
 
 
     async def check(self, message, stripped):
-        if len(message.mentions) != 1:
-            await message.channel.send('You must mention the user you wish to check')
+
+        if all([x in '0123456789' for x in stripped]):
+            user_id = int(stripped)
+
+        elif len(message.mentions) == 1:
+            user_id = message.mentions[0].id
 
         else:
-            user = session.query(User).filter(User.id == message.mentions[0].id).first()
-            if user is None:
-                await message.channel.send('User hasn\'t specified a timezone')
+            for user in message.guild.members:
+                if user.name.lower() == stripped.lower():
+                    user_id = user.id
+                    break
+                elif str(user) == stripped.lower():
+                    user_id = user.id
+                    break
             else:
-                t = datetime.now(pytz.timezone(user.timezone))
+                await message.channel.send('Please specify a user by mention, name or ID')
+                return
 
-                await message.channel.send(
-                    '{}\'s current time is {}'.format(message.mentions[0].name, t.strftime('%H:%M'))
-                )
+
+        user = session.query(User).filter(User.id == user_id).first()
+        if user is None:
+            await message.channel.send('User hasn\'t specified a timezone')
+        else:
+            usern = message.guild.get_member(user_id)
+
+            t = datetime.now(pytz.timezone(user.timezone))
+
+            await message.channel.send(
+                '{}\'s current time is {}'.format(usern.name, t.strftime('%H:%M'))
+            )
 
 
     async def update(self):
@@ -293,6 +312,7 @@ Do `timezone help` for more.
                             d['hours'] = t.strftime('%H')
                             d['minutes'] = t.strftime('%M')
                             d['days'] = t.day
+                            d['day_name'] = t.strftime('%A')
                             d['timezone'] = channel.timezone
 
                             await c.edit(name=channel.channel_name.format(d))
