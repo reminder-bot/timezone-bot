@@ -274,27 +274,31 @@ Do `timezone help` for more.
         while not client.is_closed():
 
             for channel in session.query(Clock):
-                guild = self.get_guild(channel.guild_id)
+                try:
+                    guild = self.get_guild(channel.guild_id)
 
-                if guild is None:
-                    session.query(Clock).filter_by(id=channel.id).delete(synchronize_session='fetch')
-
-                else:
-                    c = guild.get_channel(channel.channel_id)
-                    if c is None:
-                        continue
+                    if guild is None:
+                        session.query(Clock).filter_by(id=channel.id).delete(synchronize_session='fetch')
 
                     else:
-                        t = datetime.now(pytz.timezone(channel.timezone))
+                        c = guild.get_channel(channel.channel_id)
+                        if c is None:
+                            continue
 
-                        d = defaultdict(str)
+                        else:
+                            t = datetime.now(pytz.timezone(channel.timezone))
 
-                        d['hours'] = t.strftime('%H')
-                        d['minutes'] = t.strftime('%M')
-                        d['days'] = t.day
-                        d['timezone'] = channel.timezone
+                            d = defaultdict(str)
 
-                        await c.edit(name=channel.channel_name.format(d))
+                            d['hours'] = t.strftime('%H')
+                            d['minutes'] = t.strftime('%M')
+                            d['days'] = t.day
+                            d['timezone'] = channel.timezone
+
+                            await c.edit(name=channel.channel_name.format(d))
+
+                except Exception as e:
+                    print(e)
 
             await asyncio.sleep(20)
 
