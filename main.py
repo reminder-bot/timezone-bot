@@ -149,7 +149,7 @@ class BotClient(discord.AutoShardedClient):
 `timezone new <timezone name> [channel name]` - Create a new clock channel in your guild. You can customize the channel name as below:
 
 ```
-Available inputs: {{hours}}, {{days}}, {{minutes}}, {{timezone}}, {{day_name}}
+Available inputs: {{hours}}, {{days}}, {{minutes}}, {{timezone}}, {{day_name}}, {{hours_12}} (12 hour clock), {{ap}} (AM/PM)
 
 Example:
     {{hours}} o'clock on the {{days}}th
@@ -216,6 +216,9 @@ Do `timezone help` for more.
             d['days'] = t.day
             d['day_name'] = t.strftime('%A')
             d['timezone'] = tz
+            d['hours_12'] = t.strftime('%I')
+            d['ap'] = t.strftime('%p')
+
 
             c = await message.guild.create_voice_channel(
                 name.format(d),
@@ -314,6 +317,8 @@ Do `timezone help` for more.
                             d['days'] = t.day
                             d['day_name'] = t.strftime('%A')
                             d['timezone'] = channel.timezone
+                            d['hours_12'] = t.strftime('%I')
+                            d['ap'] = t.strftime('%p')
 
                             await c.edit(name=channel.channel_name.format(d))
 
