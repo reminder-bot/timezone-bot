@@ -15,6 +15,7 @@ class Clock(Base):
     timezone = Column( Text )
     channel_name = Column( Text )
     guild_id = Column( BigInteger )
+    message_id = Column( BigInteger, nullable=True )
 
     def __repr__(self):
         return '<Server {}>'.format(self.id)
