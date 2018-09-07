@@ -313,7 +313,7 @@ Do `timezone help` for more.
                     else:
                         c = guild.get_channel(channel.channel_id)
                         if c is None:
-                            continue
+                            session.query(Clock).filter(Clock.id == channel.id).delete(synchronize_session='fetch')
 
                         else:
                             t = datetime.now(pytz.timezone(channel.timezone))
