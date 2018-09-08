@@ -237,7 +237,59 @@ Do `timezone help` for more.
 
 
     async def namespace(self, message, stripped):
-        pass
+
+        if not message.author.guild_permissions.manage_guild:
+            await message.channel.send('You must be a Guild Manager to perform this command')
+
+        elif stripped.split(' ')[0].lower() not in map(lambda x: x.lower(), pytz.all_timezones):
+            await message.channel.send('Timezone not recognised. Please view a list here: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568')
+
+        else:
+            args = stripped.split(' ', 1)
+
+            tz = args.pop(0)
+
+            if len(args) != 0:
+                name = args[0].replace('{', '{0[').replace('}', ']}')
+
+            else:
+                name = '🕒 {0[hours]}:{0[minutes]} ({0[timezone]})'
+
+            t = datetime.now(pytz.timezone(tz))
+
+            d = defaultdict(str)
+
+            d['hours'] = t.strftime('%H')
+            d['minutes'] = t.strftime('%M')
+            d['days'] = t.day
+            d['day_name'] = t.strftime('%A')
+            d['timezone'] = tz
+            d['hours_12'] = t.strftime('%I')
+            d['ap'] = t.strftime('%p')
+
+            c = None
+
+            for channel in message.guild.text_channels:
+                selection = session.query(Clock).filter(Clock.channel_id == channel.id).first()
+                if selection is not None:
+                    c = channel
+                    break
+
+            else:
+                c = await message.guild.create_text_channel(
+                    'clocks',
+
+                    overwrites= {
+                        message.guild.default_role: discord.PermissionOverwrite(read_messages=True, send_messages=False)
+                    }
+                )
+
+            m = await c.send(name.format(d))
+
+            chan = Clock(channel_id=c.id, guild_id=message.guild.id, timezone=tz, channel_name=name, message_id=m.id)
+            session.add(chan)
+
+            await message.channel.send('Added clock to space. Please note it may take a few seconds for the clocks to update')
 
 
     async def personal(self, message, stripped):
@@ -315,7 +367,23 @@ Do `timezone help` for more.
                         if c is None:
                             session.query(Clock).filter(Clock.id == channel.id).delete(synchronize_session='fetch')
 
-                        else:
+                        elif isinstance(c, discord.TextChannel):
+                            t = datetime.now(pytz.timezone(channel.timezone))
+
+                            d = defaultdict(str)
+
+                            d['hours'] = t.strftime('%H')
+                            d['minutes'] = t.strftime('%M')
+                            d['days'] = t.day
+                            d['day_name'] = t.strftime('%A')
+                            d['timezone'] = channel.timezone
+                            d['hours_12'] = t.strftime('%I')
+                            d['ap'] = t.strftime('%p')
+
+                            m = await c.get_message(channel.message_id)
+                            await m.edit(content=channel.channel_name.format(d))
+
+                        elif isinstance(c, discord.VoiceChannel):
                             t = datetime.now(pytz.timezone(channel.timezone))
 
                             d = defaultdict(str)
@@ -333,7 +401,7 @@ Do `timezone help` for more.
                 except Exception as e:
                     print(e)
 
-            await asyncio.sleep(20)
+            await asyncio.sleep(10)
 
 
 client = BotClient()
