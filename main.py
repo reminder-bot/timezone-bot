@@ -198,7 +198,7 @@ Do `timezone help` for more.
             await message.channel.send('You can only have 6 clocks per guild. Consider setting up clock spaces using the `timezone space` command.')
 
         elif stripped.split(' ')[0].lower() not in map(lambda x: x.lower(), pytz.all_timezones):
-            await message.channel.send('Timezone not recognised. Please view a list here: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568')
+            await message.channel.send('Timezone not recognised. Please view a list here: https://gist.github.com/JellyWX/913dfc8b63d45192ad6cb54c829324ee')
 
         else:
             args = stripped.split(' ', 1)
@@ -242,7 +242,7 @@ Do `timezone help` for more.
             await message.channel.send('You must be a Guild Manager to perform this command')
 
         elif stripped.split(' ')[0].lower() not in map(lambda x: x.lower(), pytz.all_timezones):
-            await message.channel.send('Timezone not recognised. Please view a list here: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568')
+            await message.channel.send('Timezone not recognised. Please view a list here: https://gist.github.com/JellyWX/913dfc8b63d45192ad6cb54c829324ee')
 
         else:
             args = stripped.split(' ', 1)
@@ -295,7 +295,7 @@ Do `timezone help` for more.
     async def personal(self, message, stripped):
 
         if stripped.lower() not in map(lambda x: x.lower(), pytz.all_timezones):
-            await message.channel.send('Timezone not recognised. Please view a list here: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568')
+            await message.channel.send('Timezone not recognised. Please view a list here: https://gist.github.com/JellyWX/913dfc8b63d45192ad6cb54c829324ee')
 
         else:
             user = session.query(User).filter(User.id == message.author.id).first()

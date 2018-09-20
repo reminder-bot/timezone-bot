@@ -4,8 +4,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, relationship
 import configparser
 
-Base = declarative_base()
 
+c = configparser.SafeConfigParser()
+c.read('alembic.ini')
+url = c.get('alembic', 'sqlalchemy.url')
+print(url)
+
+
+Base = declarative_base()
 
 class Clock(Base):
     __tablename__ = 'clocks'
@@ -27,7 +33,7 @@ class User(Base):
     id = Column(BigInteger)
     timezone = Column( Text )
 
-engine = create_engine('sqlite:///app.db')
+engine = create_engine(url)
 Base.metadata.create_all(bind=engine)
 
 Session = sessionmaker(bind=engine)
