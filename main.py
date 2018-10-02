@@ -32,6 +32,8 @@ class BotClient(discord.AutoShardedClient):
         self.config = SafeConfigParser()
         self.config.read('config.ini')
 
+        self.tick_outs = {}
+
 
     async def send(self):
         guild_count = len(self.guilds)
@@ -365,9 +367,20 @@ Do `timezone help` for more.
                     else:
                         c = guild.get_channel(channel.channel_id)
                         if c is None:
-                            session.query(Clock).filter(Clock.id == channel.id).delete(synchronize_session='fetch')
+                            if channel.channel_id in self.tick_outs.keys():
+
+                                if self.tick_outs[channel.channel_id] > 120:
+                                    session.query(Clock).filter(Clock.id == channel.id).delete(synchronize_session='fetch')
+                                    del self.tick_outs[channel.channel_id]
+
+                                else:
+                                    self.tick_outs[channel.channel_id] += 1
+                            else:
+                                self.tick_outs[channel.channel_id] = 1
 
                         elif isinstance(c, discord.TextChannel):
+                            self.tick_outs[channel.channel_id] = 0
+
                             t = datetime.now(pytz.timezone(channel.timezone))
 
                             d = defaultdict(str)
@@ -384,6 +397,8 @@ Do `timezone help` for more.
                             await m.edit(content=channel.channel_name.format(d))
 
                         elif isinstance(c, discord.VoiceChannel):
+                            self.tick_outs[channel.channel_id] = 0
+
                             t = datetime.now(pytz.timezone(channel.timezone))
 
                             d = defaultdict(str)
@@ -401,7 +416,7 @@ Do `timezone help` for more.
                 except Exception as e:
                     print(e)
 
-            await asyncio.sleep(10)
+            await asyncio.sleep(5)
 
 
 client = BotClient()

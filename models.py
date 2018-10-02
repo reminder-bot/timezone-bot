@@ -8,7 +8,6 @@ import configparser
 c = configparser.SafeConfigParser()
 c.read('alembic.ini')
 url = c.get('alembic', 'sqlalchemy.url')
-print(url)
 
 
 Base = declarative_base()
