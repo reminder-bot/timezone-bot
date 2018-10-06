@@ -27,6 +27,7 @@ class BotClient(discord.AutoShardedClient):
             'personal' : self.personal,
             'check' : self.check,
             'space' : self.namespace,
+            'delete' : self.delete_timezone,
         }
 
         self.config = SafeConfigParser()
@@ -166,6 +167,10 @@ Default Value:
 `timezone personal <timezone name>` - Set your personal timezone, so others can check in on you.
 
 `timezone check <user mention>` - Check the time in a user's timezone, if they set it with `timezone personal`.
+
+`timezone space <timezone> [formatting]` - Place a timezone as a message in chat.
+
+`timezone delete [id]` - Delete timezone channels. Without arguments, will clean up channels manually deleted or delete a channel you are connected to in voice.
         '''.format(days=now.day, hours=now.hour)
         )
         await message.channel.send(embed=embed)
@@ -293,6 +298,51 @@ Do `timezone help` for more.
 
             await message.channel.send('Added clock to space. Please note it may take a few seconds for the clocks to update')
 
+
+    async def delete_timezone(self, message, stripped):
+
+        if not message.author.guild_permissions.manage_guild:
+            await message.channel.send('You must be a Guild Manager to perform this command')
+
+        else:
+            if stripped.strip():
+                try:
+                    channel_id = int(stripped)
+                except:
+                    await message.channel.send('Please either join the channel you wish to remove or follow this command with the channel\'s ID.')
+
+                else:
+                    q = session.query(Clock).filter(Clock.channel_id == channel_id)
+
+                    if q.first() is not None:
+                        q.delete(synchronize_session='fetch')
+                        await message.guild.get_channel(channel_id).delete()
+
+            elif message.author.voice != None and session.query(Clock).filter(Clock.channel_id == message.author.voice.channel.id).first() is not None:
+                channel_id = message.author.voice.channel.id
+
+                q = session.query(Clock).filter(Clock.channel_id == channel_id)
+
+                if q.first() is not None:
+                    q.delete(synchronize_session='fetch')
+                    await message.author.voice.channel.delete()
+
+            else:
+                await message.channel.send('Please either join the channel you wish to remove or follow this command with the channel\'s ID. Automatically checking for manually deleted channels now...')
+
+                q = session.query(Clock).filter(Clock.guild_id == message.guild.id)
+                deletes = []
+
+                for clock in q:
+                    if message.guild.get_channel(clock.channel_id) is None:
+                        deletes.append(clock.id)
+
+                if deletes:
+                    await message.channel.send('Cleaning up {} missing channels...'.format(len(deletes)))
+                    session.query(Clock).filter(Clock.id.in_(deletes)).delete(synchronize_session='fetch')
+
+                else:
+                    await message.channel.send('No clocks to clear up.')
 
     async def personal(self, message, stripped):
 
