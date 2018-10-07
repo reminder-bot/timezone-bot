@@ -28,6 +28,7 @@ class BotClient(discord.AutoShardedClient):
             'check' : self.check,
             'space' : self.namespace,
             'delete' : self.delete_timezone,
+            'invite' : self.info
         }
 
         self.config = SafeConfigParser()
@@ -180,6 +181,7 @@ Default Value:
         em = discord.Embed(title='INFO', description=
         '''
 **Info**
+Invite me: https://discordapp.com/oauth2/authorize?client_id=485424873863118848&scope=bot&permissions=8
 
 Bot o'clock is a part of the Fusion Network:
 https://discordbots.org/servers/366542432671760396
