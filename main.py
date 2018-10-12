@@ -206,8 +206,8 @@ Do `timezone help` for more.
         elif session.query(Clock).filter(Clock.guild_id == message.guild.id).count() >= 6:
             await message.channel.send('You can only have 6 clocks per guild. Consider setting up clock spaces using the `timezone space` command.')
 
-        elif stripped.split(' ')[0].lower() not in map(lambda x: x.lower(), pytz.all_timezones):
-            await message.channel.send('Timezone not recognised. Please view a list here: https://gist.github.com/JellyWX/913dfc8b63d45192ad6cb54c829324ee')
+        elif stripped.split(' ')[0] not in pytz.all_timezones:
+            await message.channel.send('Timezone not recognised (please note this is not case insensitive). Please view a list here: https://gist.github.com/JellyWX/913dfc8b63d45192ad6cb54c829324ee')
 
         else:
             args = stripped.split(' ', 1)
