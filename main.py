@@ -474,8 +474,7 @@ Do `timezone help` for more.
 client = BotClient()
 
 try:
-
-    client.loop.create_task(client.update())
+    #client.loop.create_task(client.update())
     client.run(client.config.get('TOKENS', 'bot'))
 except Exception as e:
     print('Error detected. Restarting in 15 seconds.')
