@@ -154,15 +154,17 @@ class BotClient(discord.AutoShardedClient):
 `timezone new <timezone name> [channel name]` - Create a new clock channel in your guild. You can customize the channel name as below:
 
 ```
-Available inputs: {{hours}}, {{days}}, {{minutes}}, {{timezone}}, {{day_name}}, {{hours_12}} (12 hour clock), {{ap}} (AM/PM)
+Available inputs: %H (hours), %M (minutes), %Z (timezone), %d (day), %p (AM/PM), %A (day name), %I (12 hour clock)
 
 Example:
-    {{hours}} o'clock on the {{days}}th
+    %H o'clock on the %dth
 Displays:
     {hours} o'clock on the {days}th
 
 Default Value:
-    🕒 {{hours}}:{{minutes}} ({{timezone}})
+    🕒 %H:%M (%Z)
+
+More inputs can be found here: http://strftime.org/
 ```
 
 `timezone personal <timezone name>` - Set your personal timezone, so others can check in on you.
@@ -218,7 +220,7 @@ Do `timezone help` for more.
                 name = args[0].replace('{', '{0[').replace('}', ']}')
 
             else:
-                name = '🕒 {0[hours]}:{0[minutes]} ({0[timezone]})'
+                name = '🕒 %H:%M (%Z)'
 
             t = datetime.now(pytz.timezone(tz))
 
@@ -234,7 +236,7 @@ Do `timezone help` for more.
 
 
             c = await message.guild.create_voice_channel(
-                name.format(d),
+                t.strftime(name).format(d),
 
                 overwrites= {
                     message.guild.default_role: discord.PermissionOverwrite(connect=False)
@@ -421,7 +423,7 @@ Do `timezone help` for more.
                         if c is None:
                             if channel.channel_id in self.tick_outs.keys():
 
-                                if self.tick_outs[channel.channel_id] > 120:
+                                if self.tick_outs[channel.channel_id] > 240:
                                     session.query(Clock).filter(Clock.id == channel.id).delete(synchronize_session='fetch')
                                     del self.tick_outs[channel.channel_id]
 
@@ -446,7 +448,7 @@ Do `timezone help` for more.
                             d['ap'] = t.strftime('%p')
 
                             m = await c.get_message(channel.message_id)
-                            await m.edit(content=channel.channel_name.format(d))
+                            await m.edit(content=t.strftime(channel.channel_name).format(d))
 
                         elif isinstance(c, discord.VoiceChannel):
                             self.tick_outs[channel.channel_id] = 0
@@ -463,7 +465,7 @@ Do `timezone help` for more.
                             d['hours_12'] = t.strftime('%I')
                             d['ap'] = t.strftime('%p')
 
-                            await c.edit(name=channel.channel_name.format(d))
+                            await c.edit(name=t.strftime(channel.channel_name).format(d))
 
                 except Exception as e:
                     print(e)
@@ -474,7 +476,7 @@ Do `timezone help` for more.
 client = BotClient()
 
 try:
-    #client.loop.create_task(client.update())
+    client.loop.create_task(client.update())
     client.run(client.config.get('TOKENS', 'bot'))
 except Exception as e:
     print('Error detected. Restarting in 15 seconds.')
