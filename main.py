@@ -217,7 +217,7 @@ Do `timezone help` for more.
             tz = args.pop(0)
 
             if len(args) != 0:
-                name = args[0].replace('{', '{0[').replace('}', ']}')
+                name = args[0]
 
             else:
                 name = '🕒 %H:%M (%Z)'
@@ -250,10 +250,10 @@ Do `timezone help` for more.
             tz = args.pop(0)
 
             if len(args) != 0:
-                name = args[0].replace('{', '{0[').replace('}', ']}')
+                name = args[0]
 
             else:
-                name = '🕒 {0[hours]}:{0[minutes]} ({0[timezone]})'
+                name = '🕒 %H:%M (%Z)'
 
             t = datetime.now(pytz.timezone(tz))
 
