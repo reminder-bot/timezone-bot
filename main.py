@@ -224,19 +224,8 @@ Do `timezone help` for more.
 
             t = datetime.now(pytz.timezone(tz))
 
-            d = defaultdict(str)
-
-            d['hours'] = t.strftime('%H')
-            d['minutes'] = t.strftime('%M')
-            d['days'] = t.day
-            d['day_name'] = t.strftime('%A')
-            d['timezone'] = tz
-            d['hours_12'] = t.strftime('%I')
-            d['ap'] = t.strftime('%p')
-
-
             c = await message.guild.create_voice_channel(
-                t.strftime(name).format(d),
+                t.strftime(name),
 
                 overwrites= {
                     message.guild.default_role: discord.PermissionOverwrite(connect=False)
@@ -268,16 +257,6 @@ Do `timezone help` for more.
 
             t = datetime.now(pytz.timezone(tz))
 
-            d = defaultdict(str)
-
-            d['hours'] = t.strftime('%H')
-            d['minutes'] = t.strftime('%M')
-            d['days'] = t.day
-            d['day_name'] = t.strftime('%A')
-            d['timezone'] = tz
-            d['hours_12'] = t.strftime('%I')
-            d['ap'] = t.strftime('%p')
-
             c = None
 
             for channel in message.guild.text_channels:
@@ -295,7 +274,7 @@ Do `timezone help` for more.
                     }
                 )
 
-            m = await c.send(name.format(d))
+            m = await c.send(t.strftime(name))
 
             chan = Clock(channel_id=c.id, guild_id=message.guild.id, timezone=tz, channel_name=name, message_id=m.id)
             session.add(chan)
@@ -454,16 +433,6 @@ Do `timezone help` for more.
                             self.tick_outs[channel.channel_id] = 0
 
                             t = datetime.now(pytz.timezone(channel.timezone))
-
-                            d = defaultdict(str)
-
-                            d['hours'] = t.strftime('%H')
-                            d['minutes'] = t.strftime('%M')
-                            d['days'] = t.day
-                            d['day_name'] = t.strftime('%A')
-                            d['timezone'] = channel.timezone
-                            d['hours_12'] = t.strftime('%I')
-                            d['ap'] = t.strftime('%p')
 
                             await c.edit(name=t.strftime(channel.channel_name).format(d))
 
