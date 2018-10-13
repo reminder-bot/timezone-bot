@@ -416,18 +416,8 @@ Do `timezone help` for more.
 
                             t = datetime.now(pytz.timezone(channel.timezone))
 
-                            d = defaultdict(str)
-
-                            d['hours'] = t.strftime('%H')
-                            d['minutes'] = t.strftime('%M')
-                            d['days'] = t.day
-                            d['day_name'] = t.strftime('%A')
-                            d['timezone'] = channel.timezone
-                            d['hours_12'] = t.strftime('%I')
-                            d['ap'] = t.strftime('%p')
-
                             m = await c.get_message(channel.message_id)
-                            await m.edit(content=t.strftime(channel.channel_name).format(d))
+                            await m.edit(content=t.strftime(channel.channel_name))
 
                         elif isinstance(c, discord.VoiceChannel):
                             self.tick_outs[channel.channel_id] = 0
@@ -445,7 +435,7 @@ Do `timezone help` for more.
 client = BotClient()
 
 try:
-    client.loop.create_task(client.update())
+    #client.loop.create_task(client.update())
     client.run(client.config.get('TOKENS', 'bot'))
 except Exception as e:
     print('Error detected. Restarting in 15 seconds.')
